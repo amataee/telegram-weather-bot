@@ -1,49 +1,79 @@
 import datetime
 import json
 import requests
-import logging
+# import logging
 
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
+# logging.basicConfig(
+#     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+# )
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
-invalid_command = "Enter the city name after command!"
+
+invalid_command = "Oh, sorry you need to specify the city name after command."
 invalid_input = "Oh, we don't support this city " \
                 "or maybe you should check your spelling!"
 
+user_input = ""
 city_id = 0
-city_cmd = "city"
-citytemp_cmd = "citytemp"
-citywind_cmd = "citywind"
-citytime_cmd = "citytime"
+isfahan = ["/city isfahan", "/citytemp isfahan",
+           "/citywind isfahan", "/citytime isfahan"]
+shiraz = ["/city shiraz", "/citytemp shiraz",
+          "/citywind shiraz", "/citytime shiraz"]
+tehran = ["/city tehran", "/citytemp tehran",
+          "/citywind tehran", "/citytime tehran"]
+yazd = ["/city yazd", "/citytemp yazd",
+        "/citywind yazd", "/citytime yazd"]
+sari = ["/city sari", "/citytemp sari",
+        "/citywind sari", "/citytime sari"]
+mashhad = ["/city mashhad", "/citytemp mashhad",
+           "/citywind mashhad", "/citytime mashhad"]
+karaj = ["/city karaj", "/citytemp karaj",
+         "/citywind karaj", "/citytime karaj"]
+tabriz = ["/city tabriz", "/citytemp tabriz",
+          "/citywind tabriz", "/citytime tabriz"]
+rasht = ["/city rasht", "/citytemp rasht",
+         "/citywind rasht", "/citytime rasht"]
+ahvaz = ["/city ahvaz", "/citytemp ahvaz",
+         "/citywind ahvaz", "/citytime ahvaz"]
 
 
-def format_input(update):
-    global city_id
+def get_input(update):
+    global user_input
     user_input = update.message.text.lower()
-
-    if user_input.replace(city_cmd, '').replace(citytemp_cmd, '').replace(citywind_cmd, '').replace(
-            citytime_cmd, '') == "/ tehran":
-        city_id = 112931
-    elif user_input.replace(city_cmd, '').replace(citytemp_cmd, '').replace(citywind_cmd, '').replace(
-            citytime_cmd, '') == "/ sydney":
-        city_id = 6619279
-    elif user_input.replace(city_cmd, '').replace(citytemp_cmd, '').replace(citywind_cmd, '').replace(
-            citytime_cmd, '') == "/ yazd":
-        city_id = 111822
-    elif user_input.replace(city_cmd, '').replace(citytemp_cmd, '').replace(citywind_cmd, '').replace(
-            citytime_cmd, '') == "/ shiraz":
-        city_id = 115019
-    elif user_input.replace(city_cmd, '').replace(citytemp_cmd, '').replace(citywind_cmd, '').replace(
-            citytime_cmd, '') == "/ isfahan":
-        city_id = 418862
+    set_city_id()
 
     return user_input
+
+
+def set_city_id():
+    global city_id, default_city
+
+    if user_input.lower() in isfahan:
+        city_id = 418862
+    elif user_input.lower() in shiraz:
+        city_id = 115019
+    elif user_input.lower() in tehran:
+        city_id = 112931
+    elif user_input.lower() in yazd:
+        city_id = 111822
+    elif user_input.lower() in sari:
+        city_id = 116996
+    elif user_input.lower() in mashhad:
+        city_id = 124665
+    elif user_input.lower() in karaj:
+        city_id = 128747
+    elif user_input.lower() in tabriz:
+        city_id = 113646
+    elif user_input.lower() in rasht:
+        city_id = 118743
+    elif user_input.lower() in ahvaz:
+        city_id = 144448
+
+    return city_id
 
 
 def weather_response(parameter):
@@ -63,16 +93,21 @@ Use /help to get and learn all commands :\)""",
 
 def help_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("""List of commands:
-/city [name] - weather status of a city
+/city [city_name] - weather status of a city
 /citytemp [city_name] - temperature of a city
 /citywind [city_name] - wind status of a city
 /citytime [city_name] - sunrise & sunset time of a city
+/cityset [city_name] - set a default city to enter commands without city name
+/cityreset - disable default city option
 
 /supportlist - list of all supported cities""")
 
 
 def city(update: Update, context: CallbackContext) -> None:
-    if format_input(update) == "/city":
+    global city_id
+    get_input(update)
+
+    if city_id == 0:
         update.message.reply_text(invalid_command)
     else:
         temp_dict = weather_response('main')
@@ -83,10 +118,40 @@ def city(update: Update, context: CallbackContext) -> None:
     status: {weather['main']}
     details: {weather['description']}
     """)
+        city_id = 0
+
+
+# def city_set(update: Update, context: CallbackContext) -> None:
+#     global default_city, city_id, failed
+
+#     if format_input(update) == "/cityset":
+#         update.message.reply_text(invalid_command)
+#     elif failed:
+#         update.message.reply_text(invalid_input)
+#         failed = False
+#     else:
+#         name_to_id()
+#         default_city = city_id
+#         update.message.reply_text(
+#             f"Successfully default city set to {format_input(update).replace('/cityset ', '').lower().title()}.")
+
+
+# def city_reset(update: Update, context: CallbackContext) -> None:
+#     global city_id, default_city
+
+#     if default_city != 0:
+#         update.message.reply_text("Default city disabled.")
+#         default_city = 0
+#         city_id = 0
+#     else:
+#         update.message.reply_text("You didn't enable this option!")
 
 
 def city_temp(update: Update, context: CallbackContext) -> None:
-    if format_input(update) == "/citytemp":
+    global city_id
+    get_input(update)
+
+    if city_id == 0:
         update.message.reply_text(invalid_command)
     else:
         temp_dict = weather_response('main')
@@ -95,36 +160,51 @@ def city_temp(update: Update, context: CallbackContext) -> None:
     Maximum temperature {temp_dict['temp_min']} ℃
     Minimum temperature {temp_dict['temp_max']} ℃
     """)
+        city_id = 0
 
 
 def city_wind(update: Update, context: CallbackContext) -> None:
-    if format_input(update) == "/citywind":
+    global city_id
+    get_input(update)
+
+    if city_id == 0:
         update.message.reply_text(invalid_command)
     else:
         wind_dict = weather_response('wind')
         update.message.reply_text(f"""Wind speed in {weather_response('name')} is
     {int(wind_dict['speed'] * 3.6)} km/h
     with {wind_dict['deg']} degrees""")
+        city_id = 0
 
 
 def city_time(update: Update, context: CallbackContext) -> None:
-    if format_input(update) == "/citytime":
+    global city_id
+    get_input(update)
+
+    if city_id == 0:
         update.message.reply_text(invalid_command)
     else:
         sys_dict = weather_response('sys')
-        update.message.reply_text(f"""Today in Tehran,
+        update.message.reply_text(f"""Today in {weather_response('name')},
     Sunrise is at {datetime.datetime.fromtimestamp(sys_dict['sunrise']).strftime('%H:%M:%S')} AM
     Sunset is at {datetime.datetime.fromtimestamp(sys_dict['sunset']).strftime('%H:%M:%S')} PM
     """)
+        city_id = 0
 
 
 def support_list(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("""
+Currently we support 10 cities:
+* Ahvaz
+* Isfahan
+* Karaj
+* Mashhad
+* Rasht
+* Sari
+* Shiraz
+* Tabriz
 * Tehran
 * Yazd
-* Shiraz
-* Isfahan
-* Sydney
 
 We'll add more cities as soon as possible 🤩
 """)
@@ -137,10 +217,12 @@ def main() -> None:
 
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
-    dispatcher.add_handler(CommandHandler(city_cmd, city))
-    dispatcher.add_handler(CommandHandler(citytemp_cmd, city_temp))
-    dispatcher.add_handler(CommandHandler(citywind_cmd, city_wind))
-    dispatcher.add_handler(CommandHandler(citytime_cmd, city_time))
+    dispatcher.add_handler(CommandHandler("city", city))
+    # dispatcher.add_handler(CommandHandler("cityset", city_set))
+    # dispatcher.add_handler(CommandHandler("cityreset", city_reset))
+    dispatcher.add_handler(CommandHandler("citytemp", city_temp))
+    dispatcher.add_handler(CommandHandler("citywind", city_wind))
+    dispatcher.add_handler(CommandHandler("citytime", city_time))
     dispatcher.add_handler(CommandHandler("supportlist", support_list))
 
     updater.start_polling()
