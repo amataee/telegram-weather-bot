@@ -13,7 +13,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-invalid_command = "Oh, sorry you need to specify the city name after command."
+invalid_command = """Oh, sorry you need to specify the city name
+or you may need to /cityset to run commands without specifying city name!"""
 invalid_input = "Oh, we don't support this city " \
                 "or maybe you should check your spelling!"
 
@@ -128,13 +129,14 @@ def city_set(update: Update, context: CallbackContext) -> None:
     global default_city_id, city_id
 
     if get_input(update) == "/cityset":
-        update.message.reply_text(invalid_command)
+        update.message.reply_text("Please specify the city after command 🙃")
     else:
         set_city_id()
         if city_id != 0:
             default_city_id = city_id
             update.message.reply_text(
                 f"Successfully default city set to {get_input(update).replace('/cityset ', '').lower().title()}.")
+            city_id = 0
         else:
             update.message.reply_text(invalid_input)
 
