@@ -12,35 +12,13 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-
-invalid_command = """Oh, sorry you need to specify the city name
-or you may need to /cityset to run commands without specifying city name!"""
-invalid_input = "Oh, we don't support this city " \
+invalid_command = "Please specify the city name after command."
+invalid_input = "We don't support this city " \
                 "or maybe you should check your spelling!"
 
 user_input = ""
 city_id = 0
 default_city_id = 0
-isfahan = ["/city isfahan", "/citytemp isfahan",
-           "/citywind isfahan", "/citytime isfahan", "/cityset isfahan"]
-shiraz = ["/city shiraz", "/citytemp shiraz",
-          "/citywind shiraz", "/citytime shiraz", "/cityset shiraz"]
-tehran = ["/city tehran", "/citytemp tehran",
-          "/citywind tehran", "/citytime tehran", "/cityset tehran"]
-yazd = ["/city yazd", "/citytemp yazd",
-        "/citywind yazd", "/citytime yazd", "/cityset yazd"]
-sari = ["/city sari", "/citytemp sari",
-        "/citywind sari", "/citytime sari", "/cityset sari"]
-mashhad = ["/city mashhad", "/citytemp mashhad",
-           "/citywind mashhad", "/citytime mashhad", "/cityset mashhad"]
-karaj = ["/city karaj", "/citytemp karaj",
-         "/citywind karaj", "/citytime karaj", "/cityset karaj"]
-tabriz = ["/city tabriz", "/citytemp tabriz",
-          "/citywind tabriz", "/citytime tabriz", "/cityset tabriz"]
-rasht = ["/city rasht", "/citytemp rasht",
-         "/citywind rasht", "/citytime rasht", "/cityset rasht"]
-ahvaz = ["/city ahvaz", "/citytemp ahvaz",
-         "/citywind ahvaz", "/citytime ahvaz", "/cityset ahvaz"]
 
 
 def get_input(update):
@@ -52,28 +30,30 @@ def get_input(update):
 
 
 def set_city_id():
-    global city_id, default_city
+    global city_id
 
-    if user_input.lower() in isfahan:
+    if "isfahan" in user_input.lower():
         city_id = 418862
-    elif user_input.lower() in shiraz:
+    elif "shiraz" in user_input.lower():
         city_id = 115019
-    elif user_input.lower() in tehran:
+    elif "tehran" in user_input.lower():
         city_id = 112931
-    elif user_input.lower() in yazd:
+    elif "yazd" in user_input.lower():
         city_id = 111822
-    elif user_input.lower() in sari:
+    elif "sari" in user_input.lower():
         city_id = 116996
-    elif user_input.lower() in mashhad:
+    elif "mashhad" in user_input.lower():
         city_id = 124665
-    elif user_input.lower() in karaj:
+    elif "karaj" in user_input.lower():
         city_id = 128747
-    elif user_input.lower() in tabriz:
+    elif "tabriz" in user_input.lower():
         city_id = 113646
-    elif user_input.lower() in rasht:
+    elif "rasht" in user_input.lower():
         city_id = 118743
-    elif user_input.lower() in ahvaz:
+    elif "ahvaz" in user_input.lower():
         city_id = 144448
+    elif "amol" in user_input.lower():
+        city_id = 143534
 
     return city_id
 
@@ -82,7 +62,8 @@ def weather_response(parameter):
     global default_city_id, city_id
 
     response = requests.get(
-        f"http://api.openweathermap.org/data/2.5/weather?id={city_id or default_city_id}&appid=f651bfb18cc09dbaf291fb291ab7bc99&units=metric")
+        f"http://api.openweathermap.org/data/2.5/weather?id={city_id or default_city_id}&appid"
+        f"=f651bfb18cc09dbaf291fb291ab7bc99&units=metric")
     weather_info = json.loads(response.text)
     return weather_info[parameter]
 
@@ -96,13 +77,12 @@ Use /help to get and learn all commands :\)""",
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text("""List of commands:
+    update.message.reply_text("""IMPORTANT: In this version of bot you need to specify city name after commands. We are working hard on imporoving this bot :D
+By the way, here are the commands that you can mess around :)
 /city [city_name] - weather status of a city
 /citytemp [city_name] - temperature of a city
 /citywind [city_name] - wind status of a city
 /citytime [city_name] - sunrise & sunset time of a city
-/cityset [city_name] - set a default city to enter commands without city name
-/cityreset - disable default city option
 
 /supportlist - list of all supported cities""")
 
@@ -123,33 +103,6 @@ def city(update: Update, context: CallbackContext) -> None:
     details: {weather['description']}
     """)
         city_id = 0
-
-
-def city_set(update: Update, context: CallbackContext) -> None:
-    global default_city_id, city_id
-
-    if get_input(update) == "/cityset":
-        update.message.reply_text("Please specify the city after command 🙃")
-    else:
-        set_city_id()
-        if city_id != 0:
-            default_city_id = city_id
-            update.message.reply_text(
-                f"Successfully default city set to {get_input(update).replace('/cityset ', '').lower().title()}.")
-            city_id = 0
-        else:
-            update.message.reply_text(invalid_input)
-
-
-def city_reset(update: Update, context: CallbackContext) -> None:
-    global city_id, default_city_id
-
-    if default_city_id != 0:
-        default_city_id = 0
-        city_id = 0
-        update.message.reply_text("Default city option disabled.")
-    else:
-        update.message.reply_text("You didn't enable this option!")
 
 
 def city_temp(update: Update, context: CallbackContext) -> None:
@@ -197,10 +150,38 @@ def city_time(update: Update, context: CallbackContext) -> None:
         city_id = 0
 
 
+def city_set(update: Update, context: CallbackContext) -> None:
+    global city_id
+    global default_city_id
+    get_input(update)
+
+    if city_id == 0:
+        update.message.reply_text(invalid_command)
+    else:
+        default_city_id = city_id
+        update.message.reply_text(
+            f"Success! Default city: {user_input.replace('/cityset ', '').title()}")
+
+
+def city_reset(update: Update, context: CallbackContext) -> None:
+    global city_id
+    global default_city_id
+    get_input(update)
+
+    if default_city_id == 0:
+        update.message.reply_text("You haven't set a city!")
+    else:
+        default_city_id = 0
+        update.message.reply_text(
+            f"Success! Your default city has been removed, you can reset it "
+            f"anytime.")
+
+
 def support_list(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("""
-Currently we support 10 cities (Just in Iran):
+Currently we support 10 cities (in Iran):
 * Ahvaz
+* Amol
 * Isfahan
 * Karaj
 * Mashhad
@@ -223,11 +204,11 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("city", city))
-    dispatcher.add_handler(CommandHandler("cityset", city_set))
-    dispatcher.add_handler(CommandHandler("cityreset", city_reset))
     dispatcher.add_handler(CommandHandler("citytemp", city_temp))
     dispatcher.add_handler(CommandHandler("citywind", city_wind))
     dispatcher.add_handler(CommandHandler("citytime", city_time))
+    dispatcher.add_handler(CommandHandler("cityset", city_set))
+    dispatcher.add_handler(CommandHandler("cityreset", city_reset))
     dispatcher.add_handler(CommandHandler("supportlist", support_list))
 
     updater.start_polling()
