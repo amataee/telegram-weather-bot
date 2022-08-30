@@ -58,12 +58,20 @@ def set_city_id():
     return city_id
 
 
+def get_token():
+    with open('tokens.txt') as f:
+        token = f.readlines()
+
+    return token
+
+
 def weather_response(parameter):
     global default_city_id, city_id
 
-    response = requests.get(
-        f"http://api.openweathermap.org/data/2.5/weather?id={city_id or default_city_id}&appid"
-        f"=f651bfb18cc09dbaf291fb291ab7bc99&units=metric")
+    # Getting app_id token for API
+    app_id = get_token()[1]
+
+    response = requests.get(f"http://api.openweathermap.org/data/2.5/weather?id={city_id or default_city_id}&appid={app_id}&units=metric")
     weather_info = json.loads(response.text)
     return weather_info[parameter]
 
@@ -197,7 +205,10 @@ We'll add more cities as soon as possible 🤩
 
 
 def main() -> None:
-    updater = Updater("5026942255:AAG092kWM-BxNPOhqB1S-JX-DvG2_KKeVEQ")
+    # Getting Telegram bot token
+    token = get_token()[0].replace('\n', '')
+
+    updater = Updater(token)
 
     dispatcher = updater.dispatcher
 
