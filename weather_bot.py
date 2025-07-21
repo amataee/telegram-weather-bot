@@ -12,9 +12,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-invalid_command = "Please specify the city name after command."
-invalid_input = "We don't support this city " \
-                "or maybe you should check your spelling!"
+invalid_input = "We don't support this city, please try again with one of the supported cities."
 
 user_input = ""
 city_id = 0
@@ -80,13 +78,12 @@ def start(update: Update, context: CallbackContext) -> None:
     user = update.effective_user
     update.message.reply_markdown_v2(
         fr"""Hi {user.mention_markdown_v2()}\!
-Use /help to get and learn all commands :\)""",
+Use /help :\)""",
     )
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text("""IMPORTANT: In this version of bot you need to specify city name after commands. We are working hard on imporoving this bot :D
-By the way, here are the commands that you can mess around :)
+    update.message.reply_text("""
 /city [city_name] - weather status of a city
 /citytemp [city_name] - temperature of a city
 /citywind [city_name] - wind status of a city
@@ -100,15 +97,14 @@ def city(update: Update, context: CallbackContext) -> None:
     get_input(update)
 
     if city_id == 0 and default_city_id == 0:
-        update.message.reply_text(invalid_command)
+        update.message.reply_text("Please specify the city name after command.\nFor example:\n`/city isfahan`", parse_mode='Markdown')
     else:
         temp_dict = weather_response('main')
         for weather in weather_response('weather'):
             update.message.reply_text(f"""
-    Weather status in {weather_response('name')}
-    temperature: {temp_dict['temp']} ℃
-    status: {weather['main']}
-    details: {weather['description']}
+    Weather in {weather_response('name')}
+    🌡️ {temp_dict['temp']} ℃
+    ℹ️ {weather['main']}({weather['description']})
     """)
         city_id = 0
 
@@ -118,13 +114,13 @@ def city_temp(update: Update, context: CallbackContext) -> None:
     get_input(update)
 
     if city_id == 0 and default_city_id == 0:
-        update.message.reply_text(invalid_command)
+        update.message.reply_text("Please specify the city name after command.\nFor example:\n`/citytemp isfahan`", parse_mode='Markdown')
     else:
         temp_dict = weather_response('main')
-        update.message.reply_text(f"""Temperature in {weather_response('name')} is {temp_dict['temp']} ℃
+        update.message.reply_text(f"""Now temperature in {weather_response('name')} is {temp_dict['temp']} ℃
     Feels like {temp_dict['feels_like']} ℃
-    Maximum temperature {temp_dict['temp_min']} ℃
-    Minimum temperature {temp_dict['temp_max']} ℃
+    Maximum temperature today is {temp_dict['temp_min']} ℃
+    and Minimum temperature is {temp_dict['temp_max']} ℃
     """)
         city_id = 0
 
@@ -134,7 +130,7 @@ def city_wind(update: Update, context: CallbackContext) -> None:
     get_input(update)
 
     if city_id == 0 and default_city_id == 0:
-        update.message.reply_text(invalid_command)
+        update.message.reply_text("Please specify the city name after command.\nFor example:\n`/citywind isfahan`", parse_mode='Markdown')
     else:
         wind_dict = weather_response('wind')
         update.message.reply_text(f"""Wind speed in {weather_response('name')} is
@@ -148,7 +144,7 @@ def city_time(update: Update, context: CallbackContext) -> None:
     get_input(update)
 
     if city_id == 0 and default_city_id == 0:
-        update.message.reply_text(invalid_command)
+        update.message.reply_text("Please specify the city name after command.\nFor example:\n`/citytime isfahan`", parse_mode='Markdown')
     else:
         sys_dict = weather_response('sys')
         update.message.reply_text(f"""Today in {weather_response('name')},
@@ -164,7 +160,7 @@ def city_set(update: Update, context: CallbackContext) -> None:
     get_input(update)
 
     if city_id == 0:
-        update.message.reply_text(invalid_command)
+        update.message.reply_text("Please specify the city name after command.\nFor example:\n`/cityset isfahan`", parse_mode='Markdown')
     else:
         default_city_id = city_id
         update.message.reply_text(
@@ -187,7 +183,7 @@ def city_reset(update: Update, context: CallbackContext) -> None:
 
 def support_list(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("""
-Currently we support 10 cities (in Iran):
+Currently we support 11 cities (in Iran):
 * Ahvaz
 * Amol
 * Isfahan
@@ -199,13 +195,12 @@ Currently we support 10 cities (in Iran):
 * Tabriz
 * Tehran
 * Yazd
-
-We'll add more cities as soon as possible 🤩
 """)
 
 
 def main() -> None:
-    # Getting Telegram bot token
+    # Getting Telegram bot token, Add your token in tokens.txt file
+    # The first line should be your bot token, the second line should be your OpenWeatherMap app_id token
     token = get_token()[0].replace('\n', '')
 
     updater = Updater(token)
